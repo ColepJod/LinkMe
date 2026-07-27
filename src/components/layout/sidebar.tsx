@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard,
   Link2,
   Palette,
   BarChart3,
-  Settings,
+  LogOut,
   ExternalLink,
 } from "lucide-react";
 
@@ -21,6 +24,22 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+      if (data) setUsername(data.username);
+    }
+    fetchProfile();
+  }, []);
 
   return (
     <aside className="hidden w-64 shrink-0 border-r border-border bg-card lg:block">
@@ -56,12 +75,22 @@ export function Sidebar() {
       </nav>
       <div className="mt-auto border-t border-border p-3">
         <Link
-          href="/"
+          href={username ? `/${username}` : "/"}
+          target="_blank"
           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         >
           <ExternalLink className="h-4 w-4" />
           View Profile
         </Link>
+        <form action={logout}>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </form>
       </div>
     </aside>
   );

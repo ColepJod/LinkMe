@@ -20,6 +20,10 @@
   --color-destructive-foreground: #fafafa;
   --color-ring: #0a0a0a;
   --color-input: #e5e5e5;
+  --color-card: #ffffff;
+  --color-card-foreground: #0a0a0a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0a0a0a;
   --radius-lg: 0.75rem;
   --radius-md: 0.5rem;
   --radius-sm: 0.25rem;
@@ -41,6 +45,10 @@
   --color-destructive-foreground: #fafafa;
   --color-ring: #d4d4d4;
   --color-input: #262626;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #fafafa;
+  --color-popover: #1a1a1a;
+  --color-popover-foreground: #fafafa;
 }
 
 body {

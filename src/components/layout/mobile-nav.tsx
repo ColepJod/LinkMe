@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard,
   Link2,
   Palette,
   BarChart3,
+  LogOut,
   Menu,
   X,
 } from "lucide-react";
@@ -55,6 +57,17 @@ export function MobileNav() {
               </Link>
             );
           })}
+          <div className="mt-2 border-t border-border pt-2">
+            <form action={logout}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </form>
+          </div>
         </nav>
       )}
     </div>

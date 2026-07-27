@@ -64,3 +64,7 @@ export interface LinkClick {
   clicked_at: string;
   referrer: string | null;
 }
+
+export interface LinkClickWithLink extends LinkClick {
+  links: { title: string } | null;
+}
