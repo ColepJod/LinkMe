@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { getLinks, createLink, updateLink, deleteLink } from "@/lib/actions/links";
 import { getSocialLinks, upsertSocialLink, deleteSocialLink } from "@/lib/actions/social";
-import { getProfile, updateProfile } from "@/lib/actions/profile";
+import { getProfile, updateProfile, uploadAvatar, uploadSupportQr, removeSupportQr } from "@/lib/actions/profile";
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
 import type { Link, SocialLink, User } from "@/lib/types";
-import { Loader2, Plus, Pencil, Trash2, GripVertical, EyeOff } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, GripVertical, EyeOff, Trash, QrCode } from "lucide-react";
 
 export default function EditorPage() {
   const [profile, setProfile] = useState<User | null>(null);
@@ -40,6 +40,33 @@ export default function EditorPage() {
     setSaving(true);
     setError(null);
     const result = await updateProfile(formData);
+    if (result?.error) { setError(result.error); setSaving(false); return; }
+    await loadData();
+    setSaving(false);
+  }
+
+  async function handleUploadAvatar(formData: FormData) {
+    setSaving(true);
+    setError(null);
+    const result = await uploadAvatar(formData);
+    if (result?.error) { setError(result.error); setSaving(false); return; }
+    await loadData();
+    setSaving(false);
+  }
+
+  async function handleUploadQr(formData: FormData) {
+    setSaving(true);
+    setError(null);
+    const result = await uploadSupportQr(formData);
+    if (result?.error) { setError(result.error); setSaving(false); return; }
+    await loadData();
+    setSaving(false);
+  }
+
+  async function handleRemoveQr() {
+    setSaving(true);
+    setError(null);
+    const result = await removeSupportQr();
     if (result?.error) { setError(result.error); setSaving(false); return; }
     await loadData();
     setSaving(false);
@@ -124,7 +151,50 @@ export default function EditorPage() {
             <label htmlFor="avatar_url" className="text-sm font-medium text-foreground">Avatar URL</label>
             <input id="avatar_url" name="avatar_url" type="url" defaultValue={profile?.avatar_url ?? ""} placeholder="https://..." className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
           </div>
-            <button type="submit" disabled={saving} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile"}</button>
+          <button type="submit" disabled={saving} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile"}</button>
+        </form>
+        <form action={handleUploadAvatar} className="mt-6 space-y-2 border-t border-border pt-4">
+          <label className="text-sm font-medium text-foreground">Or upload an image</label>
+          <div className="flex items-center gap-3">
+            <input type="file" name="avatar" accept="image/*" required className="text-sm text-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-accent file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent/80" />
+            <button type="submit" disabled={saving} className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload"}</button>
+          </div>
+          {profile?.avatar_url && (
+            <div className="flex items-center gap-3">
+              <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+              <span className="truncate text-xs text-muted-foreground">{profile.avatar_url}</span>
+            </div>
+          )}
+        </form>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-6 shadow-sm">
+        <h2 className="mb-1 flex items-center gap-2 text-lg font-semibold text-foreground"><QrCode className="h-5 w-5" /> Support Me</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Upload your UPI / payment app QR code so visitors can support you.
+        </p>
+        <form action={handleUploadQr} className="space-y-2">
+          <div className="flex items-center gap-3">
+            <input type="file" name="qr" accept="image/*" required className="text-sm text-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-accent file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent/80" />
+            <button type="submit" disabled={saving} className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload QR"}</button>
+          </div>
+          {profile?.support_qr_url && (
+            <div className="flex items-center gap-4 rounded-md border border-border bg-accent/30 p-3">
+              <img src={profile.support_qr_url} alt="Support QR code" className="h-24 w-24 rounded-md object-contain" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">QR code is live</p>
+                <p className="text-xs text-muted-foreground">It will appear in a &quot;Support Me&quot; section on your public page.</p>
+                <button
+                  type="button"
+                  onClick={handleRemoveQr}
+                  disabled={saving}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline disabled:opacity-50"
+                >
+                  <Trash className="h-3.5 w-3.5" /> Remove QR code
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </section>
 

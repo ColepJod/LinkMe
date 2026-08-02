@@ -39,6 +39,96 @@ export async function updateProfile(formData: FormData) {
   return { success: true };
 }
 
+export async function uploadAvatar(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const file = formData.get("avatar") as File;
+  if (!file) return { error: "No file provided" };
+  if (!file.type.startsWith("image/")) return { error: "File must be an image" };
+  if (file.size > 2 * 1024 * 1024) return { error: "File must be under 2MB" };
+
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const filePath = `${user.id}/${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, { upsert: true });
+
+  if (uploadError) {
+    if (uploadError.message.includes("bucket")) {
+      return { error: "Storage bucket 'avatars' not found. Create it in Supabase Dashboard → Storage." };
+    }
+    return { error: uploadError.message };
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ avatar_url: publicUrl })
+    .eq("id", user.id);
+
+  if (updateError) return { error: updateError.message };
+  revalidatePath("/editor");
+  revalidatePath(`/${user.user_metadata?.username}`);
+  return { avatar_url: publicUrl, success: true };
+}
+
+export async function uploadSupportQr(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const file = formData.get("qr") as File;
+  if (!file) return { error: "No file provided" };
+  if (!file.type.startsWith("image/")) return { error: "File must be an image" };
+  if (file.size > 2 * 1024 * 1024) return { error: "File must be under 2MB" };
+
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const filePath = `${user.id}/qrcodes/${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, { upsert: true });
+
+  if (uploadError) {
+    if (uploadError.message.includes("bucket")) {
+      return { error: "Storage bucket 'avatars' not found. Create it in Supabase Dashboard → Storage." };
+    }
+    return { error: uploadError.message };
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ support_qr_url: publicUrl })
+    .eq("id", user.id);
+
+  if (updateError) return { error: updateError.message };
+  revalidatePath("/editor");
+  revalidatePath(`/${user.user_metadata?.username}`);
+  return { support_qr_url: publicUrl, success: true };
+}
+
+export async function removeSupportQr() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ support_qr_url: null })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/editor");
+  revalidatePath(`/${user.user_metadata?.username}`);
+  return { success: true };
+}
+
 export async function getDashboardStats() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

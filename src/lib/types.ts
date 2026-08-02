@@ -5,6 +5,7 @@ export interface User {
   display_name: string;
   bio: string | null;
   avatar_url: string | null;
+  support_qr_url: string | null;
   theme: Theme;
   created_at: string;
   updated_at: string;

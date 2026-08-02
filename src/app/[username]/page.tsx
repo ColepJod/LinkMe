@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { ElementType } from "react";
 import type { Theme } from "@/lib/types";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicProfile } from "@/lib/actions/profile";
@@ -65,7 +64,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center gap-4">
           {profile.avatar_url ? (
-            <Image src={profile.avatar_url} alt={profile.display_name} width={96} height={96} className="h-24 w-24 rounded-full object-cover ring-2 ring-white/20" />
+            <img src={profile.avatar_url} alt={profile.display_name} className="h-24 w-24 rounded-full object-cover ring-2 ring-white/20" loading="lazy" />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/10 text-3xl font-bold text-white ring-2 ring-white/20">
               {profile.display_name.charAt(0).toUpperCase()}
@@ -82,7 +81,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 rounded-xl border ${theme.card} px-4 py-3.5 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]`}>
               <div className={`shrink-0 rounded-lg ${link.image_url ? "" : "bg-white/10"} p-2`}>
                 {link.image_url ? (
-                  <Image src={link.image_url} alt="" width={32} height={32} className="h-8 w-8 rounded object-cover" />
+                  <img src={link.image_url} alt="" className="h-8 w-8 rounded object-cover" loading="lazy" />
                 ) : link.icon ? (
                   <span className="text-lg">{link.icon}</span>
                 ) : (
@@ -107,6 +106,19 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 </a>
               );
             })}
+          </div>
+        )}
+
+        {profile.support_qr_url && (
+          <div className={`rounded-xl border ${theme.card} px-4 py-5 text-center`}>
+            <h2 className={`text-sm font-semibold uppercase tracking-wide ${theme.text}`}>Support Me</h2>
+            <img
+              src={profile.support_qr_url}
+              alt={`Support ${profile.display_name}`}
+              className="mx-auto mt-4 h-48 w-48 rounded-lg bg-white object-contain p-2"
+              loading="lazy"
+            />
+            <p className={`mt-3 text-xs ${theme.muted}`}>Scan to send a tip or payment</p>
           </div>
         )}
 
