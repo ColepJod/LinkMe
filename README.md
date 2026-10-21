@@ -1,5 +1,3 @@
-Absolutely. Based on the LinkMe project details you previously shared, here’s a polished, GitHub-ready `README.md` that matches the project and your resume description.
-
 # LinkMe – Universal Link Hub
 
 A full-stack, creator-focused link management platform that allows users to consolidate their **social, donation, and custom links** into one beautiful, shareable profile.
